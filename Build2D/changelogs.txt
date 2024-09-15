@@ -70,7 +70,6 @@ ALPHA:
 
 	v.1.0.1:
 		+ Destroy blocks (LMB)
-		+ Debug menu (prees: "N") 
 		+ Saving system (save: "O" load: "P")
 		= Renamed "ent_01">>"ent_00"
 
@@ -82,7 +81,6 @@ ALPHA:
 		+ Add physics to blocks (prees: "I")
 		+ Bigger map
 		= Changed settings
-		= Debug menu (hold: "N")
 		P.S: Saving system may take a while to save or load if physics objects was used.
 		
 		Block types:
