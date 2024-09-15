@@ -1,0 +1,243 @@
+Authors:
+	Company KitsaStudio 29.05.2021 (https://www.kitsastudio.neocities.org:80, http://www.kitsastudio.neocities.org:443, https://www.kitsastudio.neocities.org)
+	Romus228 (main developer)
+	Lcl
+
+Marks:
+	test:t
+	failed:f
+	added:+
+	deleted:-
+	changed:=
+	
+versions
+├───ALPHA
+│   ├───1.0
+│   │   
+│   ├───1.0.1
+│   │   
+│   ├───1.0.2
+│   │   
+│   ├───1.1
+│   │   
+│   └───1.1.1t
+│       
+├───BETA
+│   ├───1.2
+│   │   
+│   ├───1.2.2t
+│   │   
+│   ├───1.2.3
+│   │   
+│   ├───1.2.4
+│   │
+│   └───1.2.5
+│       
+├───INDEV
+│   ├───1.3
+│   │
+│   ├───1.3.1
+│	│
+│	├───1.3.2
+│	│
+│	├───1.3.3dev
+│	│
+│	├───1.4
+│	│SOON
+│	├───1.4.1
+│	│
+│	├───1.4.2
+│	│
+│	├───1.4.3
+│	│
+│	└───1.5
+│   
+├───PRE-RELEASE
+└───RELEASE
+
+
+ALPHA:
+	comment:tottaly not made in construct2.
+	v.1.0 (First soul):
+		Game is released
+		+ Place blocks (RMB)
+		+ Move (arrows)
+		+ Choose block type
+
+		Block types:
+		0:dirt
+		1:stone
+
+	v.1.0.1:
+		+ Destroy blocks (LMB)
+		+ Debug menu (prees: "N") 
+		+ Saving system (save: "O" load: "P")
+		= Renamed "ent_01">>"ent_00"
+
+		Block types:
+		1:dirt
+		2:stone
+
+	v.1.0.2:
+		+ Add physics to blocks (prees: "I")
+		+ Bigger map
+		= Changed settings
+		= Debug menu (hold: "N")
+		P.S: Saving system may take a while to save or load if physics objects was used.
+		
+		Block types:
+		1:dirt
+		2:stone
+		
+	v.1.1 (System update):
+		+ ent_01
+		+ new block
+		+ savestatus
+		+ added new controls ("A"-left "D"-right "SPACE"-jump)
+		= changed ent_00 size
+		
+		Block types:
+		1:dirt
+		2:stone
+		3:planks/box (name will be choosen in vote)
+		
+	v.1.1.1t:
+		UNKNOWN
+		
+BETA:
+	comment:how did i made beta so fast
+	v.1.2 (Material update):
+		+ new blocks
+		= changed stone texture
+		
+		Block types:
+		1:dirt
+		2:stone
+		3:cobblestone
+		4:oak
+		5:oak_planks/oak_box
+		
+	v1.2.2t:
+		+ new block
+		= textures
+		
+		Block types:
+		Block types:
+		1:dirt
+		2:stone
+		3:cobblestone
+		4:oak
+		5:oak_planks/oak_box
+		6:plastic
+		
+	v1.2.3:
+		+ new blocks
+		
+		Block types:
+		1:dirt
+		2:stone
+		3:cobblestone
+		4:oak
+		5:oak_planks/oak_box
+		6:plastic
+		7:brick
+		8:sand
+		9:glass
+		
+	v1.2.4:
+		+ physics engine choose
+		= brick texture
+		
+		Block types:
+		1:dirt
+		2:stone
+		3:cobblestone
+		4:oak
+		5:oak_planks/oak_box
+		6:plastic
+		7:brick
+		8:sand
+		9:glass
+		
+	v1.2.5:
+		+ something
+		
+		Block types:
+		1:dirt
+		2:stone
+		3:cobblestone
+		4:oak
+		5:oak_planks/oak_box
+		6:plastic
+		7:brick
+		8:sand
+		9:glass
+	
+INDEV:
+	comment: Q: why am i developing this game if it will not be popular? A: idk.
+	v1.3(techno update):
+		+ menu
+		= fixed version manifest
+		- physics engine choose
+		
+		Block types:
+		1:dirt
+		2:stone
+		3:cobblestone
+		4:oak
+		5:oak_planks/oak_box
+		6:plastic
+		7:brick
+		8:sand
+		9:glass
+		
+	v1.3.1:
+		+ new block
+		+ press W to jump
+		= fixed load save from json
+		= block choose  (press 0 to select previous block and 1 to select next block)
+		= A,D buttons fixed
+		
+		Block types:
+		1:dirt
+		2:stone
+		3:cobblestone
+		4:oak
+		5:oak_planks/oak_box
+		6:plastic
+		7:brick
+		8:sand
+		9:glass
+		10:rgb_block
+		
+	v1.3.2:
+		= layout size now 2048x2048
+		bug fixes
+	
+	v1.3.3dev:
+		+ loc_00
+		
+	v1.3.4:
+		+ updated engine
+		= ent_00 image
+		= layout size now 4096x4096
+		
+	
+	v1.4:
+	
+	v1.4.1:
+	
+	v1.4.2:
+	
+	v1.4.3:
+	
+	v1.5:
+	
+PRE-RELEASE:
+	comment: finally I DID IT
+	comment: big things coming...
+	
+	
+	v1.6:
+	
+	
