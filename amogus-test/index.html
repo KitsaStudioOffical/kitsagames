@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hitbox Editor and Game</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+            display: block;
+            margin: 0 auto;
+            background: #fff;
+        }
+        #controls {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        #message {
+            text-align: center;
+            font-size: 20px;
+            color: red;
+        }
+        #console {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            font-family: monospace;
+        }
+        #log {
+            max-height: 150px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-top: 5px;
+            color: lightgray;
+        }
+        button {
+            background-color: #444;
+            color: white;
+            border: none;
+            padding: 10px;
+            margin: 5px;
+            cursor: pointer;
+            font-family: monospace;
+        }
+        button:hover {
+            background-color: #555;
+        }
+        .cursor-dot {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: red;
+            border-radius: 50%;
+            pointer-events: none; /* Чтобы точка не блокировала клики */
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <button onclick="startEditor()">Режим редактора</button>
+        <button onclick="startGame()">Режим игры</button>
+        <button onclick="saveHitboxes()">Сохранить хитбоксы</button>
+        <button onclick="clearHitboxes()">Очистить хитбоксы</button>
+        <button onclick="deleteHitbox()">Удалить последний хитбокс</button>
+        <button onclick="clearLogs()">Очистить логи</button>
+        <button onclick="changeBackground()">Сменить фон</button>
+        <button onclick="changePlayerImage()">Сменить изображение игрока</button>
+        <button onclick="changeScale(0.5)">Уменьшить масштаб</button>
+        <button onclick="changeScale(2)">Увеличить масштаб</button>
+        <button onclick="changeMapSize()">Изменить размер карты</button>
+    </div>
+    <div id="message"></div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="console">
+        <div id="log"></div>
+    </div>
+    <div class="cursor-dot" id="cursorDot"></div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const messageDiv = document.getElementById('message');
+        const consoleDiv = document.getElementById('console');
+        const logDiv = document.getElementById('log');
+        const cursorDot = document.getElementById('cursorDot');
+
+        const player = {
+            x: 70,
+            y: 280,
+            width: 30, // Уменьшенный размер
+            height: 30, // Уменьшенный размер
+            speed: 5,
+            color: 'blue',
+            image: new Image(),
+        };
+        player.image.src = 'amogus.png';
+
+        const map = new Image();
+        map.src = 'skeld.png';
+
+        let hitboxes = [];
+        let currentHitbox = [];
+        let isEditing = false;
+        let gameMode = 'editor';
+        let keys = {};
+        let fps = 0;
+        let lastFrameTime = performance.now();
+        let cameraX = player.x - canvas.width / 2 + player.width / 2;
+        let cameraY = player.y - canvas.height / 2 + player.height / 2;
+        let scale = 1; // Масштаб по умолчанию
+        let mapWidth = 1600; // Ширина карты по умолчанию
+        let mapHeight = 1200; // Высота карты по умолчанию
+
+        window.addEventListener('keydown', function (e) {
+            keys[e.key] = true;
+        });
+
+        window.addEventListener('keyup', function (e) {
+            keys[e.key] = false;
+        });
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (gameMode === 'editor') {
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left + cameraX) / scale;
+                const y = (e.clientY - rect.top + cameraY) / scale;
+                currentHitbox.push({ x, y });
+                isEditing = true;
+                log(`Добавлена точка хитбокса: (${x}, ${y})`);
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = (e.clientX - rect.left + cameraX) / scale;
+            const mouseY = (e.clientY - rect.top + cameraY) / scale;
+
+            cursorDot.style.left = `${e.clientX - 5}px`; // Центрируем точку
+            cursorDot.style.top = `${e.clientY - 5}px`;
+
+            // Обновляем координаты курсора
+            consoleDiv.textContent = `FPS: ${fps.toFixed(2)}, Координаты: (${mouseX.toFixed(2)}, ${mouseY.toFixed(2)})`;
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (isEditing && gameMode === 'editor') {
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left + cameraX) / scale;
+                const y = (e.clientY - rect.top + cameraY) / scale;
+                currentHitbox.push({ x, y });
+                hitboxes.push(currentHitbox);
+                currentHitbox = [];
+                isEditing = false;
+                log(`Хитбокс сохранён с ${hitboxes[hitboxes.length - 1].length} точками.`);
+            }
+        });
+
+        function updatePlayer() {
+            let newX = player.x;
+            let newY = player.y;
+
+            if (keys['ArrowUp']) newY -= player.speed;
+            if (keys['ArrowDown']) newY += player.speed;
+            if (keys['ArrowLeft']) newX -= player.speed;
+            if (keys['ArrowRight']) newX += player.speed;
+
+            // Проверка столкновений с хитбоксами
+            let canMove = true;
+            hitboxes.forEach(box => {
+                if (isCollidingWithLines({ ...player, x: newX, y: newY }, box)) {
+                    canMove = false;
+                }
+            });
+
+            if (canMove) {
+                player.x = newX;
+                player.y = newY;
+
+                // Обновляем камеру
+                cameraX = player.x - canvas.width / 2 / scale + player.width / 2;
+                cameraY = player.y - canvas.height / 2 / scale + player.height / 2;
+            } else {
+                messageDiv.textContent = '';
+            }
+        }
+
+        function isCollidingWithLines(player, lineSegments) {
+            for (let i = 0; i < lineSegments.length - 1; i++) {
+                if (isCollidingWithLine(player, lineSegments[i], lineSegments[i + 1])) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function isCollidingWithLine(player, point1, point2) {
+            const distToLine = distanceToSegment(player.x + player.width / 2, player.y + player.height / 2, point1, point2);
+            return distToLine < player.width / 2;
+        }
+
+        function distanceToSegment(px, py, p1, p2) {
+            const A = px - p1.x;
+            const B = py - p1.y;
+            const C = p2.x - p1.x;
+            const D = p2.y - p1.y;
+
+            const dot = A * C + B * D;
+            const len_sq = C * C + D * D;
+            const param = len_sq !== 0 ? dot / len_sq : -1;
+
+            let xx, yy;
+
+            if (param < 0) {
+                xx = p1.x;
+                yy = p1.y;
+            } else if (param > 1) {
+                xx = p2.x;
+                yy = p2.y;
+            } else {
+                xx = p1.x + param * C;
+                yy = p1.y + param * D;
+            }
+
+            const dx = px - xx;
+            const dy = py - yy;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Очищаем канвас
+            ctx.drawImage(map, -cameraX * scale, -cameraY * scale, mapWidth * scale, mapHeight * scale); // Рисуем фон с учетом камеры
+
+            // Рисуем игрока
+            ctx.drawImage(player.image, (player.x - cameraX) * scale, (player.y - cameraY) * scale, player.width * scale, player.height * scale);
+
+            // Рисуем хитбоксы
+            hitboxes.forEach(box => {
+                ctx.beginPath();
+                ctx.moveTo((box[0].x - cameraX) * scale, (box[0].y - cameraY) * scale);
+                for (let i = 1; i < box.length; i++) {
+                    ctx.lineTo((box[i].x - cameraX) * scale, (box[i].y - cameraY) * scale);
+                }
+                ctx.closePath();
+                ctx.stroke();
+            });
+        }
+
+        function changeMapSize() {
+            const width = parseInt(prompt("Введите новую ширину карты:", mapWidth));
+            const height = parseInt(prompt("Введите новую высоту карты:", mapHeight));
+            if (!isNaN(width) && !isNaN(height)) {
+                mapWidth = width;
+                mapHeight = height;
+                log(`Размер карты изменён на: ${mapWidth} x ${mapHeight}`);
+            } else {
+                log('Некорректные значения размера карты.');
+            }
+        }
+
+        function gameLoop() {
+            const now = performance.now();
+            fps = 1000 / (now - lastFrameTime);
+            lastFrameTime = now;
+
+            if (gameMode === 'game') {
+                updatePlayer();
+            }
+
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function startEditor() {
+            gameMode = 'editor';
+            log("Режим редактора включён");
+        }
+
+        function startGame() {
+            gameMode = 'game';
+            log("Режим игры включён");
+        }
+
+        function saveHitboxes() {
+            const savedHitboxes = JSON.stringify(hitboxes);
+            localStorage.setItem('hitboxes', savedHitboxes);
+            log('Хитбоксы сохранены');
+        }
+
+        function loadHitboxes() {
+            const savedHitboxes = localStorage.getItem('hitboxes');
+            if (savedHitboxes) {
+                hitboxes = JSON.parse(savedHitboxes);
+                log('Хитбоксы загружены');
+            }
+        }
+
+        function clearHitboxes() {
+            hitboxes = [];
+            currentHitbox = [];
+            localStorage.removeItem('hitboxes');
+            log('Хитбоксы очищены');
+        }
+
+        function deleteHitbox() {
+            if (hitboxes.length > 0) {
+                hitboxes.pop();
+                log('Удалён последний хитбокс');
+            } else {
+                log('Нет хитбоксов для удаления');
+            }
+        }
+
+        function clearLogs() {
+            logDiv.textContent = '';
+            log('Логи очищены');
+        }
+
+        function changeBackground() {
+            const newBg = prompt("Введите URL нового фона:", "skeld.png");
+            if (newBg) {
+                map.src = newBg;
+                log(`Фон изменён на: ${newBg}`);
+            }
+        }
+
+        function changePlayerImage() {
+            const newImg = prompt("Введите URL нового изображения игрока:", "amogus.png");
+            if (newImg) {
+                player.image.src = newImg;
+                log(`Изображение игрока изменено на: ${newImg}`);
+            }
+        }
+
+        function changeScale(factor) {
+            scale *= factor;
+            log(`Масштаб изменён на: ${scale}`);
+        }
+
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.textContent += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        loadHitboxes();
+        gameLoop();
+    </script>
+</body>
+</html>
